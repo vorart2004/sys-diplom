@@ -1,0 +1,10 @@
+
+---
+- hosts: zabbix-server
+  remote_user: artvoadm2
+  become: yes
+  become_method: sudo
+  vars:
+    - password_db: netology
+  roles:
+    - zabbix-server

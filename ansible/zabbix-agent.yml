@@ -1,0 +1,9 @@
+---
+- hosts: zabbix-agent
+  remote_user: artvoadm2
+  become: yes
+  become_method: sudo
+  vars:
+    - zabbix_server: 10.0.1.30 # insert int IP 
+  roles:
+    - zabbix-agent

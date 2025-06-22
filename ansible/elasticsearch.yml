@@ -1,0 +1,7 @@
+---
+- hosts: elasticsearch
+  remote_user: artvoadm2
+  become: yes
+  become_method: sudo
+  roles:
+    - elasticsearch
