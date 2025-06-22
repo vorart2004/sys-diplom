@@ -24,6 +24,7 @@
 
 ## Инфраструктура
 Для развёртки инфраструктуры используйте Terraform и Ansible.  
+![infra](https://github.com/user-attachments/assets/8f42b480-2cea-40ee-b17b-bbf8ea9d697b)
 
 Не используйте для ansible inventory ip-адреса! Вместо этого используйте fqdn имена виртуальных машин в зоне ".ru-central1.internal". Пример: example.ru-central1.internal  - для этого достаточно при создании ВМ указать name=example, hostname=examle !! 
 
@@ -43,12 +44,16 @@
 Настройка балансировщика:
 
 1. Создайте [Target Group](https://cloud.yandex.com/docs/application-load-balancer/concepts/target-group), включите в неё две созданных ВМ.
+![image](https://github.com/user-attachments/assets/8f797647-cc70-4fd9-a538-f7cfd22cbf08)
 
 2. Создайте [Backend Group](https://cloud.yandex.com/docs/application-load-balancer/concepts/backend-group), настройте backends на target group, ранее созданную. Настройте healthcheck на корень (/) и порт 80, протокол HTTP.
+![image](https://github.com/user-attachments/assets/06e66da7-4287-44d0-939d-b5ecfd934fc4)
 
 3. Создайте [HTTP router](https://cloud.yandex.com/docs/application-load-balancer/concepts/http-router). Путь укажите — /, backend group — созданную ранее.
+![image](https://github.com/user-attachments/assets/d888005c-5b30-45ae-82cb-a3e16667842f)
 
 4. Создайте [Application load balancer](https://cloud.yandex.com/en/docs/application-load-balancer/) для распределения трафика на веб-сервера, созданные ранее. Укажите HTTP router, созданный ранее, задайте listener тип auto, порт 80.
+![image](https://github.com/user-attachments/assets/f71b5b16-ed0d-4cdf-a7f4-067a11b0ae08)
 
 Протестируйте сайт
 `curl -v <публичный IP балансера>:80` 
@@ -57,15 +62,18 @@
 Создайте ВМ, разверните на ней Zabbix. На каждую ВМ установите Zabbix Agent, настройте агенты на отправление метрик в Zabbix. 
 
 Настройте дешборды с отображением метрик, минимальный набор — по принципу USE (Utilization, Saturation, Errors) для CPU, RAM, диски, сеть, http запросов к веб-серверам. Добавьте необходимые tresholds на соответствующие графики.
+![zabbix](https://github.com/user-attachments/assets/3704ad34-59cd-4bb2-a697-a9c57776bfbe)
 
 ### Логи
 Cоздайте ВМ, разверните на ней Elasticsearch. Установите filebeat в ВМ к веб-серверам, настройте на отправку access.log, error.log nginx в Elasticsearch.
 
 Создайте ВМ, разверните на ней Kibana, сконфигурируйте соединение с Elasticsearch.
+![elastic](https://github.com/user-attachments/assets/fbc9f8a0-19b9-46f4-89a3-abfab7cd7d1f)
 
 ### Сеть
 Разверните один VPC. Сервера web, Elasticsearch поместите в приватные подсети. Сервера Zabbix, Kibana, application load balancer определите в публичную подсеть.
 
+![secgroups](https://github.com/user-attachments/assets/a79a703d-64ae-4f5e-b3b1-230a80a12dec)
 Настройте [Security Groups](https://cloud.yandex.com/docs/vpc/concepts/security-groups) соответствующих сервисов на входящий трафик только к нужным портам.
 
 Настройте ВМ с публичным адресом, в которой будет открыт только один порт — ssh.  Эта вм будет реализовывать концепцию  [bastion host]( https://cloud.yandex.ru/docs/tutorials/routing/bastion) . Синоним "bastion host" - "Jump host". Подключение  ansible к серверам web и Elasticsearch через данный bastion host можно сделать с помощью  [ProxyCommand](https://docs.ansible.com/ansible/latest/network/user_guide/network_debug_troubleshooting.html#network-delegate-to-vs-proxycommand) . Допускается установка и запуск ansible непосредственно на bastion host.(Этот вариант легче в настройке)
@@ -74,6 +82,7 @@ Cоздайте ВМ, разверните на ней Elasticsearch. Устан
 
 ### Резервное копирование
 Создайте snapshot дисков всех ВМ. Ограничьте время жизни snaphot в неделю. Сами snaphot настройте на ежедневное копирование.
+![image](https://github.com/user-attachments/assets/c70fa37d-5e83-4720-a661-d72c07fbb473)
 
 ### Дополнительно
 Не входит в минимальные требования. 
